@@ -7,15 +7,17 @@ DATABASE_ID = "32b96ddc396380ff830ff91dfaf3a0b9"
 notion = Client(auth=NOTION_TOKEN)
 
 def get_active_modules():
-    results = notion.databases.query_database(
-        database_id=DATABASE_ID,
-        filter={
-            "property": "Aktiv",
-            "checkbox": {"equals": True}
+    response = notion.databases.query(
+        **{
+            "database_id": DATABASE_ID,
+            "filter": {
+                "property": "Aktiv",
+                "checkbox": {"equals": True}
+            }
         }
     )
     modules = []
-    for page in results["results"]:
+    for page in response["results"]:
         props = page["properties"]
         name = props["Name"]["title"][0]["text"]["content"] if props["Name"]["title"] else ""
         inhalt = props["Inhalt"]["rich_text"][0]["text"]["content"] if props["Inhalt"]["rich_text"] else ""
