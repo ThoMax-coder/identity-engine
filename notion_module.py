@@ -7,7 +7,7 @@ DATABASE_ID = "32b96ddc396380ff830ff91dfaf3a0b9"
 notion = Client(auth=NOTION_TOKEN)
 
 def get_active_modules():
-    results = notion.databases.query(
+    results = notion.databases.query_database(
         database_id=DATABASE_ID,
         filter={
             "property": "Aktiv",
