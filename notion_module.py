@@ -1,6 +1,6 @@
 import os
 from notion_client import Client
-NOTION_TOKEN = "secret_DEIN_TOKEN_HIER"
+NOTION_TOKEN = "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"
 DATABASE_ID = "32b96ddc396380ff830ff91dfaf3a0b9"
 notion = Client(auth=NOTION_TOKEN)
 def get_active_modules():
