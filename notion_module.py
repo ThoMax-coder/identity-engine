@@ -1,8 +1,13 @@
+# -*- coding: utf-8 -*-
 import os
+import subprocess
 from notion_client import Client
+from dotenv import load_dotenv
 
-NOTION_TOKEN = "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"
-DATABASE_ID = "32b96ddc396380ff830ff91dfaf3a0b9"
+load_dotenv()
+
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")
+DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
 
 notion = Client(auth=NOTION_TOKEN)
 
@@ -24,15 +29,23 @@ def get_active_modules():
         modules.append({"name": name, "inhalt": inhalt})
     return modules
 
-def print_module_context():
+def build_context():
     modules = get_active_modules()
-    print("\n" + "="*60)
-    print("IDENTITY & MESSAGING ENGINE — AKTIVE MODULE")
-    print("="*60 + "\n")
+    lines = []
+    lines.append("=" * 60)
+    lines.append("IDENTITY & MESSAGING ENGINE - AKTIVE MODULE")
+    lines.append("=" * 60)
+    lines.append("")
     for m in modules:
-        print(f"# {m['name']}")
-        print(m['inhalt'])
-        print("\n" + "-"*60 + "\n")
+        lines.append(f"# {m['name']}")
+        lines.append(m['inhalt'])
+        lines.append("")
+        lines.append("-" * 60)
+        lines.append("")
+    return "\n".join(lines)
 
 if __name__ == "__main__":
-    print_module_context()
+    context = build_context()
+    print(context)
+    subprocess.run("clip", input=context.encode("utf-8"), check=True)
+    print("\nModule in Zwischenablage kopiert - bereit zum Einfuegen in Claude.")
