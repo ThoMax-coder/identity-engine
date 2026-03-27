@@ -47,10 +47,12 @@ def index_pdfs():
                     "text": chunk,
                     "vector": vector
                 })
-    print(f"{len(data)} Chunks aus {len(os.listdir(PDF_PFAD))} PDFs erstellt.")
+    print(f"{len(data)} Chunks aus PDFs erstellt.")
     db = lancedb.connect("./lancedb_store")
-    if "dokumente" in db.list_tables():
+    try:
         db.drop_table("dokumente")
+    except:
+        pass
     db.create_table("dokumente", data=data)
     print("Indexierung abgeschlossen.")
 
