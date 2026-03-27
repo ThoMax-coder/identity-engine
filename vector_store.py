@@ -1,0 +1,71 @@
+# -*- coding: utf-8 -*-
+import os
+import lancedb
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
+from notion_client import Client
+
+load_dotenv()
+
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")
+DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
+
+notion = Client(auth=NOTION_TOKEN)
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+def get_active_modules():
+    response = notion.databases.query(
+        **{
+            "database_id": DATABASE_ID,
+            "filter": {
+                "property": "Aktiv",
+                "checkbox": {"equals": True}
+            }
+        }
+    )
+    modules = []
+    for page in response["results"]:
+        props = page["properties"]
+        name = props["Name"]["title"][0]["text"]["content"] if props["Name"]["title"] else ""
+        inhalt = props["Inhalt"]["rich_text"][0]["text"]["content"] if props["Inhalt"]["rich_text"] else ""
+        modules.append({"name": name, "inhalt": inhalt})
+    return modules
+
+def build_vector_store():
+    print("Module aus Notion laden...")
+    modules = get_active_modules()
+
+    print("Vektoren berechnen...")
+    data = []
+    for m in modules:
+        text = f"{m['name']}: {m['inhalt']}"
+        vector = model.encode(text).tolist()
+        data.append({
+            "name": m["name"],
+            "text": text,
+            "vector": vector
+        })
+
+    print("In LanceDB speichern...")
+    db = lancedb.connect("./lancedb_store")
+    if "module" in db.table_names():
+        db.drop_table("module")
+    table = db.create_table("module", data=data)
+    print(f"{len(data)} Module gespeichert.")
+    return table
+
+def search(query, n=3):
+    db = lancedb.connect("./lancedb_store")
+    table = db.open_table("module")
+    query_vector = model.encode(query).tolist()
+    results = table.search(query_vector).limit(n).to_list()
+    return results
+
+if __name__ == "__main__":
+    build_vector_store()
+    print("\nTest-Suche: 'Wer haftet fuer KI-Entscheidungen?'")
+    results = search("Wer haftet fuer KI-Entscheidungen?")
+    for r in results:
+        print(f"\n--- {r['name']} ---")
+        print(r["text"][:200])
