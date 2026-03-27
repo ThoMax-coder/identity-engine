@@ -10,7 +10,7 @@ load_dotenv()
 DOKUMENTE_PFAD = os.getenv("DOKUMENTE_PFAD")
 PDF_PFAD = os.path.join(DOKUMENTE_PFAD, "pdf")
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 def extract_text_from_pdf(pdf_path):
     doc = pymupdf.open(pdf_path)
